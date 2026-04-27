@@ -1,0 +1,188 @@
+---
+lang: pt-BR
+title: "Análise Descritiva do Faturamento em 2023"
+author: "Seu Nome"
+date: today
+format:
+  html:
+    embed-resources: true
+    toc: true
+    number-sections: true
+execute:
+  eval: true
+  echo: false
+  warning: false
+  message: false
+---
+
+
+```{r}
+#| label: importa-dados
+
+# carrega os pacotes usados no relatório
+library(here) # monta caminhos relativos ao projeto
+library(tidyverse) # importa funções de leitura e manipulação de dados
+library(gt) # cria tabelas formatadas para o relatório
+
+# define o caminho do arquivo de dados já limpo
+caminho_rds <- here("dados/limpos/dados_vendas_limpos.rds")
+
+# lê a base que será analisada no relatório
+dados_vendas_limpos <- readr::read_rds(caminho_rds)
+
+# calcula medidas que serão mostradas no texto
+n_transacoes <- nrow(dados_vendas_limpos)
+n_cidades <- n_distinct(dados_vendas_limpos$cidade)
+n_produtos <- n_distinct(dados_vendas_limpos$produto)
+
+# identifica e formata as datas de início e fim do período analisado
+data_inicial <- format(min(dados_vendas_limpos$data), "%d/%m/%Y")
+data_final   <- format(max(dados_vendas_limpos$data), "%d/%m/%Y")
+
+# formata a receita total no padrão monetário brasileiro
+receita_total_fmt <- format(
+  sum(dados_vendas_limpos$receita),
+  big.mark     = ".",
+  decimal.mark = ",",
+  nsmall       = 2,
+  scientific   = FALSE
+)
+```
+
+
+
+# Contexto
+
+Este relatório apresenta uma análise descritiva das vendas registradas em
+2023, no período de `r data_inicial` a `r data_final`. O objetivo é
+descrever a distribuição da receita por cidade e por produto, a partir da
+base de vendas disponível, para identificar os principais vetores de
+faturamento observados em 2023.
+
+A base analisada reúne `r n_transacoes` transações, distribuídas em
+`r n_cidades` cidades e `r n_produtos` produtos, com receita total de
+R$ `r receita_total_fmt`.
+
+
+
+# Análise Descritiva
+
+## Receita por Cidade
+
+A @tbl-receita-cidade apresenta a receita agregada por cidade em ordem
+decrescente. Formiga lidera o faturamento em 2023, com R$ 1.434.080,00,
+seguida por Arcos, com R$ 839.490,00. Pimenta e Piumhi apresentam valores
+substancialmente menores, de R$ 322.105,00 e R$ 319.705,00,
+respectivamente.
+
+Os resultados mostram concentração da receita em duas praças principais. Em
+termos descritivos, o desempenho observado indica que Formiga e Arcos
+responderam pela maior parcela do faturamento total em 2023.
+
+```{r}
+#| label: tbl-receita-cidade
+#| tbl-cap: "Receita total por cidade em 2023."
+
+# calcula a receita total por cidade
+tabela_receita_cidade <- dados_vendas_limpos |>
+  group_by(cidade) |>
+  summarize(receita_total = sum(receita)) |>
+  arrange(desc(receita_total))
+
+# monta a tabela final que será exibida no relatório
+tabela_receita_cidade |>
+  gt() |>
+  cols_label(
+    cidade        = "Cidade",
+    receita_total = "Receita Total"
+  ) |>
+  # exibe os valores como moeda no padrão brasileiro
+  fmt_currency(
+    columns  = receita_total,
+    currency = "BRL",
+    sep_mark = ".",
+    dec_mark = ","
+  ) |>
+  # adiciona uma linha final com o total da receita
+  grand_summary_rows(
+    columns = receita_total,
+    fns     = list(Total = ~ sum(., na.rm = TRUE)),
+    fmt     = list(~ fmt_currency(., currency = "BRL", sep_mark = ".", dec_mark = ","))
+  ) |>
+  # destaca visualmente as maiores receitas com azul mais escuro
+  data_color(
+    columns = receita_total,
+    palette = c("lightblue", "steelblue")
+  ) |>
+  tab_source_note(
+    source_note = "Fonte: dados simulados pelo professor."
+  )
+```
+
+
+
+## Receita por Produto
+
+A @tbl-receita-produto apresenta a receita agregada por produto, também em
+ordem decrescente. O Produto A registrou a maior receita, com
+R$ 1.337.655,00, seguido pelo Produto B, com R$ 1.025.805,00. O Produto C
+totalizou R$ 551.920,00, posicionando-se abaixo dos dois primeiros itens.
+
+Esse resultado indica maior contribuição do faturamento concentrada nos
+Produtos A e B, enquanto o Produto C apresentou participação inferior no
+total de 2023.
+
+```{r}
+#| label: tbl-receita-produto
+#| tbl-cap: "Receita total por produto em 2023."
+
+# calcula a receita total por produto
+tabela_receita_produto <- dados_vendas_limpos |>
+  group_by(produto) |>
+  summarize(receita_total = sum(receita)) |>
+  arrange(desc(receita_total))
+
+# monta a tabela final que será exibida no relatório
+tabela_receita_produto |>
+  gt() |>
+  cols_label(
+    produto       = "Produto",
+    receita_total = "Receita Total"
+  ) |>
+  # exibe os valores como moeda no padrão brasileiro
+  fmt_currency(
+    columns  = receita_total,
+    currency = "BRL",
+    sep_mark = ".",
+    dec_mark = ","
+  ) |>
+  # adiciona uma linha final com o total da receita
+  grand_summary_rows(
+    columns = receita_total,
+    fns     = list(Total = ~ sum(., na.rm = TRUE)),
+    fmt     = list(~ fmt_currency(., currency = "BRL", sep_mark = ".", dec_mark = ","))
+  ) |>
+  # destaca visualmente as maiores receitas com azul mais escuro
+  data_color(
+    columns = receita_total,
+    palette = c("lightblue", "steelblue")
+  ) |>
+  tab_source_note(
+    source_note = "Fonte: dados simulados pelo professor."
+  )
+```
+
+
+
+# Recomendações
+
+Em 2023, os dados indicam que a receita esteve mais concentrada em Formiga 
+e Arcos, do ponto de vista geográfico, e nos Produtos A e B, do ponto de 
+vista da carteira.
+
+Com base nessa evidência descritiva, recomenda-se monitorar com maior
+atenção os segmentos que lideram o faturamento, tanto por cidade quanto por
+produto. Como desdobramento analítico, uma etapa seguinte seria avaliar a
+participação percentual de cada grupo na receita total e examinar a
+distribuição conjunta entre cidade e produto, caso o objetivo seja
+identificar oportunidades comerciais mais específicas.
