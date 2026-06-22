@@ -1,0 +1,38 @@
+---
+lang: pt-BR
+title: "Relatório de Teste: HTML, DOCX e Referências"
+author: "Seu Nome"
+date: today
+format:
+  html:
+    embed-resources: true
+    toc: true
+    number-sections: true
+bibliography: referencias.bib
+csl: associacao-brasileira-de-normas-tecnicas-ipea.csl
+execute:
+  echo: false
+  warning: false
+  message: false
+---
+
+
+# Contexto
+
+Este documento foi criado para praticar a produção de relatórios em
+HTML e docx com o sistema Quarto.
+
+
+# Recomendações
+
+O livro de @r4ds2ed é considerado uma referência para aprender a
+linguagem R.
+
+A economia baseada em dados dos dias atuais tem raízes históricas
+discutidas em @harkness2021.
+
+
+# Referências
+
+::: {#refs}
+:::

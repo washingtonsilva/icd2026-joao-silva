@@ -9,7 +9,6 @@ format:
     toc: true
     number-sections: true
 execute:
-  eval: true
   echo: false
   warning: false
   message: false
@@ -119,6 +118,53 @@ tabela_receita_cidade |>
   )
 ```
 
+
+A @fig-receita-cidade mostra a mesma informação da tabela anterior em
+forma de gráfico, facilitando a comparação visual entre as cidades.
+
+```{r}
+#| label: fig-receita-cidade
+#| fig-cap: "Receita total por cidade em 2023."
+#| fig-width: 6.5
+#| fig-height: 4.5
+
+# usa a tabela já criada no relatório como base do gráfico
+tabela_receita_cidade |>
+  # ordena as cidades pela receita para facilitar a leitura
+  ggplot(aes(x = reorder(cidade, receita_total), y = receita_total)) +
+  # desenha as barras com uma cor única
+  geom_col(fill = "steelblue") +
+  # escreve o valor da receita dentro de cada barra
+  geom_text(
+    aes(
+      label = scales::label_number(
+        big.mark = ".",
+        decimal.mark = ",",
+        prefix = "R$ "
+      )(receita_total)
+    ),
+    hjust = 1.05,
+    color = "white",
+    size = 4
+  ) +
+  # gira o gráfico para deixar os nomes das cidades mais legíveis
+  coord_flip() +
+  # ajusta títulos e eixos
+  labs(
+    y = "Receita total (R$)"
+  ) +
+  # formata os valores do eixo
+  scale_y_continuous(
+    labels = scales::label_number(big.mark = ".", decimal.mark = ","),
+    expand = expansion(mult = c(0, 0.03))
+  ) +
+  # aplica um tema simples e melhora a leitura dos textos
+  theme_minimal(base_size = 14) +
+  theme(
+    panel.grid.major.y = element_blank(),
+    axis.title.y = element_blank()
+  )
+```
 
 
 ## Receita por Produto
